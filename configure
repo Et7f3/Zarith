@@ -38,6 +38,7 @@ mloptflags="$OCAMLOPTFLAGS"
 mlinc="$OCAMLINC"
 objsuffix="o"
 ocamlfind="auto"
+prefix=''
 
 # sanitize
 LC_ALL=C
@@ -59,6 +60,7 @@ where options include:
   -gmp                 use GMP library (default if found)
   -mpir                use MPIR library instead of GMP
   -perf                enable performance statistics
+  -prefix              add prefix to non ocamltool, e.g. -prefix x86_64-w64-mingw32-
 
 Environment variables that affect configuration:
   CC                   C compiler to use (default: try gcc, then cc)
@@ -99,12 +101,17 @@ while : ; do
             gmp='mpir';;
         -perf|--perf)
             perf='yes';;
+        -prefix|--prefix)
+            prefix="$2"
+            shift;;
         *)
             echo "unknown option $1, try -help"
             exit 2;;
     esac
     shift
 done
+
+ar=$prefix$ar
 
 if test "$perf" = "yes"; then ccdef="-DZ_PERF_COUNTER $ccdef"; fi
 
