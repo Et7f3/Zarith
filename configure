@@ -226,6 +226,7 @@ else
   cc='cc'
   ccopt="-O3 -Wall -Wextra $CFLAGS"
 fi
+cc=$prefix$cc
 
 # optional native-code generation
 
