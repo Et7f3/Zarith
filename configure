@@ -218,15 +218,14 @@ if test -n "$CC"; then
   searchbinreq "$CC"
   cc="$CC"
   ccopt="$CFLAGS"
-elif ! searchbin 'gcc'; then
-  cc='gcc'
+elif ! searchbin $prefix'gcc'; then
+  cc=$prefix'gcc'
   ccopt="-O3 -Wall -Wextra $CFLAGS"
 else
-  searchbinreq 'cc'
-  cc='cc'
+  searchbinreq $prefix'cc'
+  cc=$prefix'cc'
   ccopt="-O3 -Wall -Wextra $CFLAGS"
 fi
-cc=$prefix$cc
 
 # optional native-code generation
 
