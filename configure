@@ -160,7 +160,7 @@ checkinc()
     echo "#include <$1>" > tmp.c
     echo "int main() { return 1; }" >> tmp.c
     r=1
-    echo $cc $ccopt $ccinc -c tmp.c -o tmp.o >/dev/null 2>/dev/null || r=0
+    echo $cc $ccopt $ccinc -c tmp.c -o tmp.o
     $cc $ccopt $ccinc -c tmp.c -o tmp.o >/dev/null 2>/dev/null || r=0
     if test ! -f tmp.o; then r=0; fi
     rm -f tmp.c tmp.o
