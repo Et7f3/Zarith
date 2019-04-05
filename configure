@@ -38,7 +38,6 @@ mloptflags="$OCAMLOPTFLAGS"
 mlinc="$OCAMLINC"
 objsuffix="o"
 ocamlfind="auto"
-prefix=''
 
 # sanitize
 LC_ALL=C
@@ -60,7 +59,7 @@ where options include:
   -gmp                 use GMP library (default if found)
   -mpir                use MPIR library instead of GMP
   -perf                enable performance statistics
-  -prefix              add prefix to non ocamltool, e.g. -prefix x86_64-w64-mingw32-
+  -prefixnonocaml      add for non ocaml tool, e.g. -prefixnonocaml x86_64-w64-mingw32-
 
 Environment variables that affect configuration:
   CC                   C compiler to use (default: try gcc, then cc)
@@ -101,8 +100,8 @@ while : ; do
             gmp='mpir';;
         -perf|--perf)
             perf='yes';;
-        -prefix|--prefix)
-            prefix="$2"
+        -prefixnonocaml|--prefixnonocaml)
+            prefixnonocaml="$2"
             shift;;
         *)
             echo "unknown option $1, try -help"
@@ -110,8 +109,6 @@ while : ; do
     esac
     shift
 done
-
-ar=$prefix$ar
 
 if test "$perf" = "yes"; then ccdef="-DZ_PERF_COUNTER $ccdef"; fi
 
@@ -160,7 +157,6 @@ checkinc()
     echo "#include <$1>" > tmp.c
     echo "int main() { return 1; }" >> tmp.c
     r=1
-    echo $cc $ccopt $ccinc -c tmp.c -o tmp.o
     $cc $ccopt $ccinc -c tmp.c -o tmp.o >/dev/null 2>/dev/null || r=0
     if test ! -f tmp.o; then r=0; fi
     rm -f tmp.c tmp.o
@@ -212,19 +208,26 @@ searchbinreq $ocamlc
 searchbinreq $ocamldep
 searchbinreq $ocamlmklib
 searchbinreq $ocamldoc
-searchbinreq $ar
+searchbin $ar
+if test $? -eq 0; then ar=$prefixnonocaml$ar; searchbinreq $ar; fi
 searchbinreq perl
 
 if test -n "$CC"; then
   searchbinreq "$CC"
   cc="$CC"
   ccopt="$CFLAGS"
-elif ! searchbin $prefix'gcc'; then
-  cc=$prefix'gcc'
+elif ! searchbin 'gcc'; then
+  cc='gcc'
+  ccopt="-O3 -Wall -Wextra $CFLAGS"
+elif ! searchbin $prefixnonocaml'gcc'; then
+  cc=$prefixnonocaml'gcc'
+  ccopt="-O3 -Wall -Wextra $CFLAGS"
+elif ! searchbin 'cc'; then
+  cc='cc'
   ccopt="-O3 -Wall -Wextra $CFLAGS"
 else
-  searchbinreq $prefix'cc'
-  cc=$prefix'cc'
+  searchbinreq $prefixnonocaml'cc'
+  cc=$prefixnonocaml'cc'
   ccopt="-O3 -Wall -Wextra $CFLAGS"
 fi
 
@@ -250,10 +253,9 @@ fi
 # directories
 
 if test "$ocamllibdir" = "auto"; then ocamllibdir=`ocamlc -where`; fi
+# to avoir fail on Cygwin
 ocamllibdir=${ocamllibdir//$'\r'/}
 
-
-# fails on Cygwin:
 if test ! -f "$ocamllibdir/caml/mlvalues.h"
 then echo "cannot find OCaml libraries in $ocamllibdir"; exit 2; fi
 ccinc="-I$ocamllibdir $ccinc"
@@ -474,4 +476,3 @@ configuration successful!
 now type "make" to build
 then type "make install" or "sudo make install" to install
 EOF
-
